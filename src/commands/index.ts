@@ -4,8 +4,9 @@ import {util} from "./util";
 import {words} from "./words";
 import {trades} from "./trades";
 import {users} from "./users";
+import {lookup} from "./lookup";
 
-export const commands: Command[] = [util, ...words, ...trades, ...users];
+export const commands: Command[] = [util, ...words, ...trades, ...users, ...lookup];
 
 const commandsWithAliases = commands.reduce((all, command) => {
   return command.aliases.reduce((previous, commandName) => {
