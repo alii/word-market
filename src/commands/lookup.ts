@@ -4,8 +4,8 @@ import {generateMarket} from "../services/message";
 import {StandardEmbed} from "../structs/standard-embed";
 import {Command} from "../types/command";
 
-export const lookup: Command = {
-  aliases: ["lookup", "price"],
+export const price: Command = {
+  aliases: ["price"],
   description: "Get the price of a certain word",
   inhibitors: [guilds],
   async run(message: Message, [word]) {
@@ -23,3 +23,5 @@ export const lookup: Command = {
     await message.channel.send(embed);
   },
 };
+
+export const lookup = [price] as const;

@@ -5,6 +5,8 @@ import {StandardEmbed} from "../structs/standard-embed";
 import {generateMarket} from "../services/message";
 import {prisma} from "../services/prisma";
 import {TradeType} from "@prisma/client";
+import {resolveUser} from "../services/users";
+import {redis} from "../services/redis";
 
 export const buy: Command = {
   aliases: ["buy"],
@@ -29,6 +31,12 @@ export const buy: Command = {
       throw new Error("Unknown word (or has not been sent yet)");
     }
 
+    const user = await resolveUser(message.author.id);
+
+    if (price >= user.balance) {
+      throw new Error("Insufficient funds");
+    }
+
     await prisma.trades.create({
       data: {
         status: TradeType.Buy,
@@ -37,6 +45,15 @@ export const buy: Command = {
         price,
       },
     });
+
+    await prisma.user.update({
+      where: {discord_id: message.author.id},
+      data: {
+        balance: user.balance - price,
+      },
+    });
+
+    await redis.del(`user:${message.author.id}`);
 
     await message.channel.send(
       new StandardEmbed(message.author).setTitle(`Purchase Success for ${price}`)

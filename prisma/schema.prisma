@@ -24,10 +24,17 @@ model Word {
   @@map("words")
 }
 
+model User {
+  discord_id String   @id
+  balance    Int      @default(10)
+  Trades     Trades[]
+}
+
 model Trades {
   id      String    @id @default(cuid())
   status  TradeType
   word    Word      @relation(fields: [word_id], references: [id])
+  user    User      @relation(fields: [user_id], references: [discord_id])
   word_id String
   user_id String
   price   Int
