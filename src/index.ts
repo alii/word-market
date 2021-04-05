@@ -5,12 +5,11 @@ import {aliases, commands} from "./commands";
 import {StandardEmbed} from "./structs/standard-embed";
 import {prisma} from "./services/prisma";
 import {redis} from "./services/redis";
-import {isDev} from "./constants";
+import {isDev, prefix} from "./constants";
 import signale from "signale";
 import {registerMessage} from "./services/message";
 
 const client = new Client();
-const prefix = process.env.PREFIX || "--";
 
 client.on("ready", () => {
   signale.info("Environment:", isDev ? "dev" : "prod");

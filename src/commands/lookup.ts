@@ -3,6 +3,7 @@ import {guilds} from "../inhibitors/guilds";
 import {generateMarket} from "../services/message";
 import {StandardEmbed} from "../structs/standard-embed";
 import {Command} from "../types/command";
+import {prefix} from "../constants";
 
 export const price: Command = {
   aliases: ["price"],
@@ -10,7 +11,7 @@ export const price: Command = {
   inhibitors: [guilds],
   async run(message: Message, [word]) {
     if (!word) {
-      throw new Error(`Expected usage: "--lookup <word>"`);
+      throw new Error(`Expected usage: \`${prefix}lookup <word>\``);
     }
     const market = await generateMarket(message.guild!.id);
     const price = market[word];
