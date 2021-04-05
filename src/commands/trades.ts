@@ -8,8 +8,6 @@ import {Prisma, TradeType, User, Trades} from "@prisma/client";
 import {resolveUser} from "../services/users";
 import {redis} from "../services/redis";
 
-type ClientType = Prisma.Prisma__UserClient<User> | Prisma.Prisma__TradesClient<Trades>;
-
 const list: Command = {
   aliases: ["list"],
   description: "List all your trades",
@@ -56,7 +54,14 @@ const sellAll: Command = {
   async run(message, [word]) {
     const trades = await prisma.trades.findMany({
       where: {
-        word_id: `${word}:${message.guild!.id}`,
+        AND: [
+          {
+            word_id: `${word}:${message.guild!.id}`,
+          },
+          {
+            user_id: message.author.id,
+          },
+        ],
       },
       include: {
         word: true,
@@ -67,23 +72,25 @@ const sellAll: Command = {
 
     const market = await generateMarket(message.guild!.id);
 
-    const tx = trades.reduce((all, trade) => {
+    const balance = trades.reduce((all, trade) => {
       const marketPrice = market[trade.word.id.split(":")[0]];
+      return all + user.balance + marketPrice;
+    }, 0);
 
-      const balance = user.balance + (marketPrice - trade.price);
+    await prisma.user.update({
+      where: {discord_id: user.discord_id},
+      data: {balance},
+    });
 
+    const tx = trades.reduce((all, trade) => {
       return [
         ...all,
-        prisma.user.update({
-          where: {discord_id: user.discord_id},
-          data: {balance},
-        }),
         prisma.trades.update({
           where: {id: trade.id},
           data: {status: TradeType.SOLD},
         }),
       ];
-    }, [] as ClientType[]);
+    }, [] as Prisma.Prisma__TradesClient<Trades>[]);
 
     await redis.del(`user:${message.author.id}`);
     await prisma.$transaction(tx);
@@ -116,7 +123,7 @@ const sell: Command = {
 
     const user = await resolveUser(message.author.id);
 
-    const balance = user.balance + (marketPrice - trade.price);
+    const balance = user.balance + marketPrice;
 
     await prisma.trades.update({
       where: {id: trade.id},
