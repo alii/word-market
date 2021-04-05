@@ -80,7 +80,7 @@ export async function generateMarket(server_id: string): Promise<Record<string, 
     });
   });
 
-  return wrapRedis("market", () => {
+  return wrapRedis(`market:${server_id}`, () => {
     const total = words.reduce((all, word) => {
       return word.count + all;
     }, 0);
