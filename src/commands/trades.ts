@@ -18,6 +18,7 @@ const list: Command = {
     const trades = await prisma.trades.findMany({
       where: {
         user_id: message.author.id,
+        status: TradeType.BOUGHT,
       },
       include: {
         word: true,
@@ -26,19 +27,23 @@ const list: Command = {
 
     const embed = new StandardEmbed(message.author);
 
-    const fields = trades.map(
-      (trade): EmbedField => {
-        return {
-          name: trade.id,
-          value: `Status: ${trade.status}\nWord: ${trade.word.id.split(":")[0]}\nPurchase Price: ${
-            trade.price
-          }`,
-          inline: true,
-        };
-      }
-    );
+    if (trades.length === 0) {
+      embed.setDescription("You have no purchases!");
+    } else {
+      const fields = trades.map(
+        (trade): EmbedField => {
+          return {
+            name: trade.id,
+            value: `Status: ${trade.status}\nWord: ${
+              trade.word.id.split(":")[0]
+            }\nPurchase Price: ${trade.price}`,
+            inline: true,
+          };
+        }
+      );
 
-    embed.addFields(fields);
+      embed.addFields(fields);
+    }
 
     await message.channel.send(embed);
   },
@@ -75,7 +80,7 @@ const sellAll: Command = {
         }),
         prisma.trades.update({
           where: {id: trade.id},
-          data: {status: TradeType.Sell},
+          data: {status: TradeType.SOLD},
         }),
       ];
     }, [] as ClientType[]);
@@ -115,7 +120,7 @@ const sell: Command = {
 
     await prisma.trades.update({
       where: {id: trade.id},
-      data: {status: TradeType.Sell},
+      data: {status: TradeType.SOLD},
     });
 
     await prisma.user.update({
@@ -160,7 +165,7 @@ const buy: Command = {
 
     await prisma.trades.create({
       data: {
-        status: TradeType.Buy,
+        status: TradeType.BOUGHT,
         word_id: wordModel.id,
         user_id: message.author.id,
         price,

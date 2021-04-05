@@ -89,7 +89,7 @@ export async function generateMarket(server_id: string): Promise<Record<string, 
 
     for (const word of words) {
       const [value] = word.id.split(":");
-      map[value] = (word.count / total) * 100;
+      map[value] = parseFloat(((word.count / total) * 10000).toFixed(2));
     }
 
     return map;

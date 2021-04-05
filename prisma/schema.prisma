@@ -41,8 +41,8 @@ model Trades {
 }
 
 enum TradeType {
-  Buy
-  Sell
+  BOUGHT
+  SOLD
 
   @@map("trade_type")
 }
