@@ -77,15 +77,19 @@ export async function registerMessage(message: Message): Promise<void> {
 }
 
 export async function generateMarket(server_id: string): Promise<Record<string, number>> {
-  const words = await wrapRedis(
-    `words:${server_id}`,
-    () => {
-      return prisma.word.findMany({
-        where: {server_id},
-      });
-    },
-    60
-  );
+  // const words = await wrapRedis(
+  //   `words:${server_id}`,
+  //   () => {
+  //     return prisma.word.findMany({
+  //       where: {server_id},
+  //     });
+  //   },
+  //   60
+  // );
+
+  const words = await prisma.word.findMany({
+    where: {server_id},
+  });
 
   const total = words.reduce((all, word) => {
     return word.count + all;
