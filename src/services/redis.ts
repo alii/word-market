@@ -12,7 +12,7 @@ export const redis = new IORedis(process.env.REDIS_URL, {
 export async function wrapRedis<T>(
   key: string,
   fn: () => Promise<T> | T,
-  seconds = 60
+  seconds = 600
 ): Promise<T> {
   const cached = await redis.get(key);
   if (cached) return JSON.parse(cached);

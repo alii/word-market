@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -10,7 +7,18 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  discord_id String @id
-  score      Int    @default(0)
+model Server {
+  guild_id String @id
+  words    Word[]
+
+  @@map("servers")
+}
+
+model Word {
+  id        String @id
+  count     Int    @default(1)
+  server    Server @relation(fields: [server_id], references: [guild_id])
+  server_id String
+
+  @@map("words")
 }

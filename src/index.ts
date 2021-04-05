@@ -7,6 +7,7 @@ import {prisma} from "./services/prisma";
 import {redis} from "./services/redis";
 import {isDev} from "./constants";
 import signale from "signale";
+import {registerMessage} from "./services/message";
 
 const client = new Client();
 const prefix = process.env.PREFIX || "--";
@@ -18,7 +19,10 @@ client.on("ready", () => {
 
 client.on("message", async message => {
   if (message.author.bot) return;
-  if (!message.content.startsWith(prefix)) return;
+
+  if (!message.content.startsWith(prefix)) {
+    return registerMessage(message);
+  }
 
   const [rawCommandName, ...args] = message.content.replace(prefix, "").split(" ");
   const commandName = rawCommandName.toLowerCase();
