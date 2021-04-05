@@ -3,6 +3,7 @@ import {EmbedField, Message} from "discord.js";
 import {guilds} from "../inhibitors/guilds";
 import {StandardEmbed} from "../structs/standard-embed";
 import {prisma} from "../services/prisma";
+import {generateMarket} from "../services/message";
 
 const market: Command = {
   aliases: ["market"],
@@ -17,14 +18,18 @@ const market: Command = {
       },
     });
 
+    const market = await generateMarket(message.guild!.id);
+
     const embed = new StandardEmbed(message.author).setTitle(`Top 10 words`);
 
     const fields = rows.map(
       (word): EmbedField => {
+        const name = word.id.split(":")[0];
+
         return {
-          name: word.id.split(":")[0],
-          value: `$${word.count}`,
-          inline: true,
+          name,
+          value: `$${market[name]}`,
+          inline: false,
         };
       }
     );
