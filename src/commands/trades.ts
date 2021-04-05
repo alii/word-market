@@ -4,7 +4,7 @@ import {guilds} from "../inhibitors/guilds";
 import {StandardEmbed} from "../structs/standard-embed";
 import {generateMarket} from "../services/message";
 import {prisma} from "../services/prisma";
-import {Prisma, TradeType, User, Trades} from "@prisma/client";
+import {Prisma, Trades, TradeType} from "@prisma/client";
 import {resolveUser} from "../services/users";
 import {redis} from "../services/redis";
 
