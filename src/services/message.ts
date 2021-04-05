@@ -77,9 +77,6 @@ export async function generateMarket(server_id: string): Promise<Record<string, 
       where: {server_id},
       orderBy: {count: "desc"},
       take: 10,
-      orderBy: {
-        count: "desc",
-      },
     });
   });
 
