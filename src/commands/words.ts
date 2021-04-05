@@ -13,9 +13,7 @@ const market: Command = {
   async run(message: Message): Promise<void> {
     const table = await generateMarket(message.guild!.id);
 
-    const embed = new StandardEmbed(message.author).setTitle(
-      `Total Words ${Object.values(table).length}`
-    );
+    const embed = new StandardEmbed(message.author).setTitle(`Top 10 words`);
 
     embed.setDescription(codeblock(JSON.stringify(table, null, 4)));
 
