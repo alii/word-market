@@ -77,6 +77,9 @@ export async function generateMarket(server_id: string): Promise<Record<string, 
       where: {server_id},
       orderBy: {count: "desc"},
       take: 10,
+      orderBy: {
+        count: "desc",
+      },
     });
   });
 
@@ -89,7 +92,7 @@ export async function generateMarket(server_id: string): Promise<Record<string, 
 
     for (const word of words) {
       const [value] = word.id.split(":");
-      map[value] = Math.floor((word.count / total) * 100);
+      map[value] = (word.count / total) * 100;
     }
 
     return map;

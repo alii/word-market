@@ -26,7 +26,7 @@ model Word {
 
 model User {
   discord_id String   @id
-  balance    Int      @default(10)
+  balance    Float    @default(10)
   Trades     Trades[]
 }
 
@@ -37,7 +37,7 @@ model Trades {
   user    User      @relation(fields: [user_id], references: [discord_id])
   word_id String
   user_id String
-  price   Int
+  price   Float
 }
 
 enum TradeType {
