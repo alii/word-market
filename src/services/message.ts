@@ -31,22 +31,26 @@ export async function registerMessage(message: Message): Promise<void> {
     });
   });
 
-  const words = await Promise.all(
-    message.content.split(" ").map(async item => {
-      if (item.trim() === "") return null;
+  const words = [
+    ...new Set(
+      await Promise.all(
+        message.content.split(" ").map(async item => {
+          if (item.trim() === "") return null;
 
-      const isRatelimited = await redis.get(`word-ratelimit:${item}`);
+          const isRatelimited = await redis.get(`word-ratelimit:${item}`);
 
-      if (isRatelimited) {
-        return null;
-      }
+          if (isRatelimited) {
+            return null;
+          }
 
-      return item
-        .trim()
-        .toLowerCase()
-        .replace(/[^0-9a-z]/gi, "");
-    })
-  );
+          return item
+            .trim()
+            .toLowerCase()
+            .replace(/[^0-9a-z]/gi, "");
+        })
+      )
+    ),
+  ];
 
   const tx = words.reduce((all, word) => {
     if (!word) return all;
