@@ -75,6 +75,7 @@ export async function generateMarket(server_id: string): Promise<Record<string, 
   const words = await wrapRedis(`words:${server_id}`, () => {
     return prisma.word.findMany({
       where: {server_id},
+      orderBy: {count: "desc"},
       take: 10,
     });
   });
