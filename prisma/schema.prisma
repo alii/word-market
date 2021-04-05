@@ -15,10 +15,26 @@ model Server {
 }
 
 model Word {
-  id        String @id
-  count     Int    @default(1)
-  server    Server @relation(fields: [server_id], references: [guild_id])
+  id        String   @id
+  count     Int      @default(1)
+  server    Server   @relation(fields: [server_id], references: [guild_id])
   server_id String
+  trades    Trades[]
 
   @@map("words")
+}
+
+model Trades {
+  id      String    @id @default(cuid())
+  type    TradeType
+  word    Word      @relation(fields: [word_id], references: [id])
+  word_id String
+  user_id String
+}
+
+enum TradeType {
+  Buy
+  Sell
+
+  @@map("trade_type")
 }

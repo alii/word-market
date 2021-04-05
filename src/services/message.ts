@@ -1,7 +1,12 @@
 import {Prisma, Word} from "@prisma/client";
 import {Message} from "discord.js";
 import {prisma} from "./prisma";
-import {wrapRedis} from "./redis";
+import {redis, wrapRedis} from "./redis";
+
+/**
+ * The default expiry for ratelimited words in seconds
+ */
+const RATELIMIT_TTL = 60;
 
 export async function registerMessage(message: Message): Promise<void> {
   if (!message.guild) {
@@ -26,26 +31,38 @@ export async function registerMessage(message: Message): Promise<void> {
     });
   });
 
-  const tx = message.content
-    .split(" ")
-    .map(item => {
+  const words = await Promise.all(
+    message.content.split(" ").map(async item => {
+      if (item.trim() === "") return null;
+
+      const isRatelimited = await redis.get(`word-ratelimit:${item}`);
+
+      if (isRatelimited) {
+        return null;
+      }
+
       return item
         .trim()
         .toLowerCase()
         .replace(/[^0-9a-z]/gi, "");
     })
-    .filter(item => item !== "")
-    .reduce((all, word) => {
-      const operation = prisma.word.upsert({
-        where: {id: `${word}:${server_id}`},
-        create: {id: `${word}:${server_id}`, server_id},
-        update: {
-          count: {increment: 1},
-        },
-      });
+  );
 
-      return [...all, operation];
-    }, [] as Prisma.Prisma__WordClient<Word>[]);
+  const tx = words.reduce((all, word) => {
+    if (!word) return all;
+
+    void redis.set(`word-ratelimit:${word}`, "yes", "ex", RATELIMIT_TTL);
+
+    const operation = prisma.word.upsert({
+      where: {id: `${word}:${server_id}`},
+      create: {id: `${word}:${server_id}`, server_id},
+      update: {
+        count: {increment: 1},
+      },
+    });
+
+    return [...all, operation];
+  }, [] as Prisma.Prisma__WordClient<Word>[]);
 
   await prisma.$transaction(tx);
 }
