@@ -4,6 +4,8 @@ import {StandardEmbed} from "../structs/standard-embed";
 import {prisma} from "../services/prisma";
 import {redis} from "../services/redis";
 
+const ONE_DAY_IN_SECONDS = 60 * 60 * 24;
+
 export const bal: Command = {
   description: "Checks your balance",
   aliases: ["bal", "balance"],
@@ -14,6 +16,33 @@ export const bal: Command = {
     const embed = new StandardEmbed(message.author).setTitle(`You have $${user.balance}.`);
 
     await message.channel.send(embed);
+  },
+};
+
+export const daily: Command = {
+  aliases: ["daily", "claim"],
+  description: "Claim $200 every day",
+  inhibitors: [],
+  async run(message) {
+    const hasUsedToday = await redis.get(`daily:${message.author.id}`);
+
+    if (hasUsedToday) {
+      throw new Error("You have already claimed your daily cash.");
+    }
+
+    const user = await resolveUser(message.author.id);
+
+    await prisma.user.update({
+      where: {discord_id: user.discord_id},
+      data: {
+        balance: {increment: 200},
+      },
+    });
+
+    await redis.set(`daily:${message.author.id}`, "yes", "ex", ONE_DAY_IN_SECONDS);
+    await redis.del(`user:${message.author.id}`);
+
+    await message.channel.send("You have claimed $200.");
   },
 };
 
@@ -68,4 +97,4 @@ export const pay: Command = {
   },
 };
 
-export const users = [bal, pay] as const;
+export const users = [bal, pay, daily] as const;

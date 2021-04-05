@@ -1,21 +1,35 @@
 import {Command} from "../types/command";
-import {Message} from "discord.js";
+import {EmbedField, Message} from "discord.js";
 import {guilds} from "../inhibitors/guilds";
 import {StandardEmbed} from "../structs/standard-embed";
-import {generateMarket} from "../services/message";
-
-const codeblock = (v: string) => `\`\`\`${v}\`\`\``;
+import {prisma} from "../services/prisma";
 
 const market: Command = {
   aliases: ["market"],
   description: "Get word usages since a time",
   inhibitors: [guilds],
   async run(message: Message): Promise<void> {
-    const table = await generateMarket(message.guild!.id);
+    const rows = await prisma.word.findMany({
+      where: {server_id: message.guild!.id},
+      take: 25,
+      orderBy: {
+        count: "desc",
+      },
+    });
 
     const embed = new StandardEmbed(message.author).setTitle(`Top 10 words`);
 
-    embed.setDescription(codeblock(JSON.stringify(table, null, 4)));
+    const fields = rows.map(
+      (word): EmbedField => {
+        return {
+          name: word.id.split(":")[0],
+          value: `$${word.count}`,
+          inline: true,
+        };
+      }
+    );
+
+    embed.addFields(fields);
 
     await message.channel.send(embed);
   },

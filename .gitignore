@@ -5,3 +5,4 @@ dist
 .vscode
 .env
 .env.local
+.env.prod

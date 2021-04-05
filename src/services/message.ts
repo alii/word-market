@@ -55,7 +55,12 @@ export async function registerMessage(message: Message): Promise<void> {
   const tx = words.reduce((all, word) => {
     if (!word) return all;
 
-    void redis.set(`word-ratelimit:${word}`, "yes", "ex", RATELIMIT_TTL);
+    void redis.set(
+      `word:${word}:ratelimit:${server_id}:${message.author.id}`,
+      "yes",
+      "ex",
+      RATELIMIT_TTL
+    );
 
     const operation = prisma.word.upsert({
       where: {id: `${word}:${server_id}`},
@@ -75,8 +80,6 @@ export async function generateMarket(server_id: string): Promise<Record<string, 
   const words = await wrapRedis(`words:${server_id}`, () => {
     return prisma.word.findMany({
       where: {server_id},
-      orderBy: {count: "desc"},
-      take: 10,
     });
   });
 
