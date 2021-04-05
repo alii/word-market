@@ -1,8 +1,8 @@
-import {Command} from "../../types/command";
+import {Command} from "../types/command";
 import {Message} from "discord.js";
-import {guilds} from "../../inhibitors/guilds";
-import {StandardEmbed} from "../../structs/standard-embed";
-import {generateMarket} from "../../services/message";
+import {guilds} from "../inhibitors/guilds";
+import {StandardEmbed} from "../structs/standard-embed";
+import {generateMarket} from "../services/message";
 
 const codeblock = (v: string) => `\`\`\`${v}\`\`\``;
 

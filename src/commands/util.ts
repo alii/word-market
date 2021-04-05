@@ -1,6 +1,6 @@
-import {Command} from "../../types/command";
+import {Command} from "../types/command";
 
-export const ping: Command = {
+export const util: Command = {
   aliases: ["ping", "pi"],
   description: "Checks that the bot is online",
   syntax: "<message>",

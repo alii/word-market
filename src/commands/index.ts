@@ -1,9 +1,10 @@
 import {Command} from "../types/command";
 
-import {ping} from "./util/ping";
+import {util} from "./util";
 import {words} from "./words";
+import {trades} from "./trades";
 
-export const commands: Command[] = [ping, ...words];
+export const commands: Command[] = [util, ...words, ...trades];
 
 const commandsWithAliases = commands.reduce((all, command) => {
   return command.aliases.reduce((previous, commandName) => {

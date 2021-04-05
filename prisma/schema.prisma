@@ -26,10 +26,11 @@ model Word {
 
 model Trades {
   id      String    @id @default(cuid())
-  type    TradeType
+  status  TradeType
   word    Word      @relation(fields: [word_id], references: [id])
   word_id String
   user_id String
+  price   Int
 }
 
 enum TradeType {
