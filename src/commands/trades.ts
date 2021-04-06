@@ -8,6 +8,48 @@ import {Prisma, Trades, TradeType} from "@prisma/client";
 import {resolveUser} from "../services/users";
 import {redis} from "../services/redis";
 
+const buyMax: Command = {
+  aliases: ["buymax"],
+  description: "Spends all your money on a single word",
+  inhibitors: [guilds],
+  async run(message, [name]) {
+    const word = await prisma.word.findFirst({
+      where: {id: `${name}:${message.guild!.id}`},
+    });
+
+    const market = await generateMarket(message.guild!.id);
+
+    const price = market[name];
+
+    if (!price) {
+      throw new Error("Unknown word");
+    }
+
+    if (!word) {
+      throw new Error("Unknown Word");
+    }
+
+    const user = await resolveUser(message.author.id);
+
+    const entities = Math.floor(user.balance / price);
+
+    const tx = [...new Array(entities >= 10_000 ? 10_000 : entities)].map(() => {
+      return prisma.trades.create({
+        data: {
+          user_id: user.discord_id,
+          status: TradeType.BOUGHT,
+          word_id: word.id,
+          price,
+        },
+      });
+    });
+
+    await prisma.$transaction(tx);
+
+    await message.channel.send("chers boguht them all lamo");
+  },
+};
+
 const list: Command = {
   aliases: ["list"],
   description: "List all your trades",
@@ -194,4 +236,4 @@ const buy: Command = {
   },
 };
 
-export const trades = [buy, sell, list, sellAll] as const;
+export const trades = [buy, sell, list, sellAll, buyMax] as const;
